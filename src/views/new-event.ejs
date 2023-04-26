@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plataforma de Eventos - Criar novo evento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <section class="bg-gray-100 w-screen h-screen">
+      <div class="mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-5">
+          <div class="lg:col-span-2 lg:py-12">
+            <h1 class="text-4xl text-gray-900 font-bold mb-4">
+              Cadastrar eventos
+            </h1>
+            <p class="text-2xl text-gray-600 italic">
+              Crie e gerencie seus eventos de forma agíl, permitindo ativar
+              notificações para não perder seus eventos!
+            </p>
+          </div>
+
+          <div class="rounded-lg bg-white p-8 shadow-lg lg:col-span-3 lg:p-12">
+            <form action="/events/create" method="post" class="space-y-4">
+              <div>
+                <label class="sr-only" for="name">Nome</label>
+                <input
+                  class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                  placeholder="Nome do evento"
+                  type="text"
+                  name="name"
+                  id="name"
+                  required
+                />
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="sr-only" for="Text">Tema</label>
+                  <input
+                    class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                    placeholder="Temas do evento"
+                    type="text"
+                    name="tags"
+                    id="tags"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="sr-only" for="Text">Local</label>
+                  <input
+                    class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                    placeholder="Local do evento"
+                    type="text"
+                    name="where"
+                    id="where"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="sr-only" for="Text">Valor</label>
+                  <input
+                    class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                    placeholder="Valor do ingresso (R$)"
+                    type="text"
+                    name="price"
+                    id="price"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="sr-only" for="Text">Valor</label>
+                  <input
+                    class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                    placeholder="Link da foto do evento (se houver)"
+                    type="text"
+                    name="thumbnail"
+                    id="thumbnail"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="sr-only" for="Data">Data</label>
+                <input
+                  class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                  placeholder="Data do evento"
+                  type="datetime-local"
+                  name="when"
+                  id="when"
+                  required
+                />
+              </div>
+
+              <div>
+                <textarea
+                  class="w-full rounded-lg border-gray-200 p-3 text-sm"
+                  placeholder="Descrição do evento"
+                  rows="8"
+                  id="description"
+                  name="description"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="mt-4">
+                <button
+                  type="submit"
+                  class="inline-block w-full rounded-lg bg-red-800 px-5 py-3 font-medium text-white sm:w-auto"
+                >
+                  Criar novo evento
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
