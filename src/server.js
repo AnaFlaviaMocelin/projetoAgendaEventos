@@ -76,5 +76,9 @@ app.post("/signin",  passport.authenticate('local', {
 app.get("/signup", authController.createAccount);
 app.post("/signup/create", authController.signUp);
 
+app.get("/forgotPassword", authController.forgotPassword);
+
+app.get("/verification", authController.verification);
+
 
 app.listen(port, () => console.log(`Application has been started at ${port}`));

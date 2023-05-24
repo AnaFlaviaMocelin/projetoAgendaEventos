@@ -46,5 +46,11 @@ module.exports = {
     },
     signUp: function(req, res) {
         return res.redirect('/events')
+    },
+    forgotPassword: function(req, res) {
+        return res.render('forgot-password')
+    },
+    verification: function(re, res){
+        return res.render('verification')
     }
 }
