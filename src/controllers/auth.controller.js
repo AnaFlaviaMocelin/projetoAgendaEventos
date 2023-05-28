@@ -1,19 +1,11 @@
-const users = [
-    {
-        id: "1",
-        email: "admin@admin.com",
-        password: "$2a$12$h/uGVKLRQMRW3.Z2n9.YwuDrtnn9PUNwE.bl6GMaOcmBgHFQhGQvW",
+const mongoClient = require("../database/mongo.db");
+const passwordService = require("../services/password.service");
 
-    },
-    {
-        id: "2",
-        email: "user@user.com",
-        password: "$2a$12$h/uGVKLRQMRW3.Z2n9.YwuDrtnn9PUNwE.bl6GMaOcmBgHFQhGQvW",
-    }
-];
+
+const crypto = require("node:crypto");
 
 module.exports = {
-    users,
+    
     login: function(req, res) {
         return res.render("sign-in", { message: req.flash('error'), success: req.flash('success')[0] });
     },
@@ -31,7 +23,8 @@ module.exports = {
             return req.flash('error', 'Campo de password é obrigatório!')
         }
 
-        const user = users.find((user) => user.email === email) 
+        const user = mongoClient.findUserByEmail(email)
+
         if(!user){
             return req.flash('error', 'Usuário não existe na plataforma!')
         }
@@ -45,6 +38,29 @@ module.exports = {
         return res.render('sign-up')
     },
     signUp: function(req, res) {
+
+        const {body} = req
+        const email = body?.email
+        const password = body?.password
+
+        if(!email){
+            return req.flash('error', 'Campo de E-mail é obrigatório!')
+        }
+
+        if(!password){
+            return req.flash('error', 'Campo de password é obrigatório!')
+        }
+
+        const hashedPass = passwordService.hash(password);
+
+        const user = {
+            id: crypto.randomUUID(),
+            email: email,
+            password: hashedPass
+        }
+
+        mongoClient.createUser(user);
+
         return res.redirect('/events')
     },
     forgotPassword: function(req, res) {

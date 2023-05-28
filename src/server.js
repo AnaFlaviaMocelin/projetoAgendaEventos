@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 
 const authController = require('./controllers/auth.controller')
 const eventsController = require("./controllers/events.controller");
+const mongoClient = require("./database/mongo.db");
 
 const config = require("./config");
 
@@ -22,9 +23,11 @@ app.use(flash());
 app.use(session({ secret: 'mySecret', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+
 passport.use(
-    new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-      const user = authController.users.find((user) => user.email === email);
+    new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
+      const user = await mongoClient.findUserByEmail(email);
+
       if (!user) {
         return done(null, false, { message: 'Usuário não encontrado' });
       }
@@ -45,8 +48,8 @@ passport.use(
     done(null, user.id);
   });
   
-  passport.deserializeUser((id, done) => {
-    const user = authController.users.find((user) => user.id === id);
+  passport.deserializeUser( async (id, done) => {
+    const user = await mongoClient.findUserByEmail(id);
     done(null, user);
   });
 
