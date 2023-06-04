@@ -1,4 +1,5 @@
 const path = require("node:path");
+require('dotenv').config();
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -7,6 +8,8 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { google } = require('googleapis');
 
 
 const authController = require('./controllers/auth.controller')
@@ -20,9 +23,30 @@ const port = parseInt(config.getEnv("PORT", false, "3000"));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(flash());
-app.use(session({ secret: 'mySecret', resave: false, saveUninitialized: false }));
+app.use(session({ 
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+ }));
+
+ passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.CALLBACK_URL
+},
+  (accessToken, refreshToken, profile, cb) => {
+      userProfile=profile;
+      return cb(null, userProfile);
+  }
+));
 app.use(passport.initialize());
 app.use(passport.session());
+
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.CALLBACK_URL
+);
 
 passport.use(
     new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
@@ -74,10 +98,36 @@ app.post("/signin",  passport.authenticate('local', {
     successRedirect: '/events',
     failureRedirect: '/',
     failureFlash: true,
-  }));
+  })
+);
+
+app.get("/auth/google", passport.authenticate('google', { scope : ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+    res.redirect('/events');
+  }
+);
+
+app.get('/auth/callback', (req, res) => {
+const code = req.query.code;
+  if (code) {
+    oauth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error on get access token', err);
+      req.session.token = token;
+      res.render('events'); 
+    });
+  }
+});
 
 app.get("/signup", authController.createAccount);
 app.post("/signup/create", authController.signUp);
 
+app.get('/logout', (req, res) => {
+  req.logout((err) => {
+    console.error(err)
+  });
+  res.redirect('/');
+});
 
 app.listen(port, () => console.log(`Application has been started at ${port}`));

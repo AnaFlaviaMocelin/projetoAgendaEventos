@@ -25,9 +25,9 @@ const events = [
 
 module.exports = {
   findManyEvents: async function (req, res) {
-    if (!req.isAuthenticated()) {
-      return res.redirect('/')
-    }
+    // if (!req.isAuthenticated()) {
+    //   return res.redirect('/')
+    // }
     const pagination = {
       items: events,
       metadata: {

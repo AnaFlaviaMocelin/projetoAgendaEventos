@@ -9,6 +9,11 @@ module.exports = {
     login: function(req, res) {
         return res.render("sign-in", { message: req.flash('error'), success: req.flash('success')[0] });
     },
+
+    loginWithGoogle(req, res) {
+
+    },
+    
     signIn: function(req, res) {
       
         const {body} = req
@@ -28,7 +33,8 @@ module.exports = {
         if(!user){
             return req.flash('error', 'Usuário não existe na plataforma!')
         }
-        const isPasswordMatching = password === user.password
+
+        const isPasswordMatching = passwordService.hash(password) === user.password
         if(!isPasswordMatching){
             return req.flash('error', 'Senha incorreta!')
         }
