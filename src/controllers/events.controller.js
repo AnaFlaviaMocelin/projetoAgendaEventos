@@ -26,7 +26,7 @@ const events = [
 module.exports = {
   findManyEvents: async function (req, res) {
     if (!req.isAuthenticated()) {
-      return res.redirect('/')
+      return res.redirect("/");
     }
     const pagination = {
       items: events,
@@ -41,13 +41,13 @@ module.exports = {
   },
   newEvent: async function (req, res) {
     if (!req.isAuthenticated()) {
-      return res.redirect('/')
+      return res.redirect("/");
     }
     return res.render("new-event");
   },
   createEvent: async function (req, res) {
     if (!req.isAuthenticated()) {
-      return res.redirect('/')
+      return res.redirect("/");
     }
     const data = req.body;
 
