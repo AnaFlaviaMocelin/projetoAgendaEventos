@@ -1,7 +1,9 @@
-const mongoClient = require("../database/mongo.db");
+const crypto = require("node:crypto");
+
+const mongoUserRepository = require("../repositories/mongo-user.repository");
 const passwordService = require("../services/password.service");
 
-const crypto = require("node:crypto");
+const signInUseCase = require("../usecases/sign-in.usecase");
 
 module.exports = {
   login: function (req, res) {
@@ -10,8 +12,11 @@ module.exports = {
       success: req.flash("success")[0],
     });
   },
-  signIn: function (req, res) {
+  signIn: async function (req, res) {
     const { body } = req;
+
+    console.log("signIn", body);
+
     const email = body?.email;
     const password = body?.password;
 
@@ -23,22 +28,29 @@ module.exports = {
       return req.flash("error", "Campo de password é obrigatório!");
     }
 
-    const user = mongoClient.findUserByEmail(email);
+    const { success } = await signInUseCase(
+      { email, password },
+      mongoUserRepository,
+      passwordService
+    );
 
-    if (!user) {
-      return req.flash("error", "Usuário não existe na plataforma!");
+    if (!success) {
+      return req.flash(
+        "error",
+        "O email ou senha não está correto, verifique os dados."
+      );
     }
-    const isPasswordMatching = password === user.password;
-    if (!isPasswordMatching) {
-      return req.flash("error", "Senha incorreta!");
-    }
+
     return res.redirect("/events");
   },
   createAccount: function (req, res) {
     return res.render("sign-up");
   },
-  signUp: function (req, res) {
+  signUp: async function (req, res) {
     const { body } = req;
+
+    console.log("signUp", body);
+
     const email = body?.email;
     const password = body?.password;
 
@@ -50,15 +62,15 @@ module.exports = {
       return req.flash("error", "Campo de password é obrigatório!");
     }
 
-    const hashedPass = passwordService.hash(password);
+    const { hash, salt } = passwordService.hash(password);
 
     const user = {
       id: crypto.randomUUID(),
       email: email,
-      password: hashedPass,
+      password: `${hash}:${salt}`,
     };
 
-    mongoClient.createUser(user);
+    await mongoUserRepository.createUser(user);
 
     return res.redirect("/events");
   },

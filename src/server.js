@@ -10,9 +10,11 @@ const bcrypt = require("bcrypt");
 
 const authController = require("./controllers/auth.controller");
 const eventsController = require("./controllers/events.controller");
-const mongoClient = require("./database/mongo.db");
+const mongoUserRepository = require("./repositories/mongo-user.repository");
 
 const config = require("./config");
+const signInUsecase = require("./usecases/sign-in.usecase");
+const passwordService = require("./services/password.service");
 
 const app = express();
 const port = parseInt(config.getEnv("PORT", false, "3000"));
@@ -29,31 +31,34 @@ passport.use(
   new LocalStrategy(
     { usernameField: "email" },
     async (email, password, done) => {
-      const user = await mongoClient.findUserByEmail(email);
+      const { success, data, error } = await signInUsecase(
+        { email, password },
+        mongoUserRepository,
+        passwordService
+      );
 
-      if (!user) {
-        return done(null, false, { message: "Usuário não encontrado" });
+      if (!success) {
+        console.log(success, data, error, { email, password, done });
+        return done(null, false, {
+          message: "Usuário não autenticado.",
+        });
       }
 
-      bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err) throw err;
-        if (isMatch) {
-          return done(null, user);
-        } else {
-          return done(null, false, { message: "Senha incorreta" });
-        }
-      });
+      const { user } = data;
+
+      return done(null, user);
     }
   )
 );
 
 passport.serializeUser((user, done) => {
-  console.log(user);
+  console.log("serializeUser", user);
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
-  const user = await mongoClient.findUserByEmail(id);
+  console.log("deserializeUser", { id });
+  const user = await mongoUserRepository.findUserById(id);
   done(null, user);
 });
 
