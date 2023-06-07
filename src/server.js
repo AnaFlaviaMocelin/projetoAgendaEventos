@@ -1,12 +1,17 @@
 const path = require("node:path");
+const crypto = require("node:crypto");
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const flash = require("connect-flash");
 const session = require("express-session");
 const passport = require("passport");
+
 const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt");
+const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
+const GOOGLE_CLIENT_ID =
+  "294086134100-eto116nse6hqonj6p5kan28dju841q19.apps.googleusercontent.com";
+const GOOGLE_CLIENT_SECRET = "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";
 
 const authController = require("./controllers/auth.controller");
 const eventsController = require("./controllers/events.controller");
@@ -51,14 +56,62 @@ passport.use(
   )
 );
 
-passport.serializeUser((user, done) => {
-  console.log("serializeUser", user);
-  done(null, user.id);
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/auth/google/callback",
+    },
+    async function (accessToken, refreshToken, profile, done) {
+      userProfile = profile;
+
+      console.log({
+        accessToken,
+        refreshToken,
+        profile,
+      });
+
+      return done(null, userProfile);
+    }
+  )
+);
+
+passport.serializeUser(async (data, done) => {
+  console.log("serializeUser", data);
+
+  let email = data.hasOwnProperty("email") ? data.email : null;
+
+  // google serialize
+  if (data.hasOwnProperty("_json")) {
+    const googleData = data["_json"];
+    email = googleData?.email;
+  }
+
+  if (!email) {
+    return done(new Error("Error serializing user"), null);
+  }
+
+  const user = await mongoUserRepository.findUserByEmail(email);
+
+  if (!user) {
+    user = {
+      id: crypto.randomUUID(),
+      email: email,
+      password: "empty:empty",
+    };
+    console.log("user does not exists, creating it", user);
+    await mongoUserRepository.createUser(user);
+  }
+
+  return done(null, user.email);
 });
 
-passport.deserializeUser(async (id, done) => {
-  console.log("deserializeUser", { id });
-  const user = await mongoUserRepository.findUserById(id);
+passport.deserializeUser(async (email, done) => {
+  console.log("deserializeUser", { email });
+
+  const user = await mongoUserRepository.findUserByEmail(email);
+
   done(null, user);
 });
 
@@ -86,6 +139,20 @@ app.post(
     failureRedirect: "/",
     failureFlash: true,
   })
+);
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/error" }),
+  async function (req, res) {
+    console.log(req.body, req.headers, "redirect");
+    return res.redirect("/events");
+  }
 );
 
 app.get("/signup", authController.createAccount);
