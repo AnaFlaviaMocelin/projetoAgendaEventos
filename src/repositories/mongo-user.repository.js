@@ -2,7 +2,6 @@ const mongoClient = require("../database/mongo.db");
 
 class MongoUserRepository {
   async findUserByEmail(email) {
-    await mongoClient.connect();
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("users");
     try {
@@ -15,7 +14,6 @@ class MongoUserRepository {
   }
 
   async createUser(user) {
-    await mongoClient.connect();
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("users");
     try {
@@ -28,7 +26,6 @@ class MongoUserRepository {
   }
 
   async findUserById(id) {
-    await mongoClient.connect();
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("users");
     try {

@@ -15,6 +15,9 @@ const GOOGLE_CLIENT_SECRET = "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";
 
 const authController = require("./controllers/auth.controller");
 const eventsController = require("./controllers/events.controller");
+
+const mongoClient = require("./database/mongo.db");
+
 const mongoUserRepository = require("./repositories/mongo-user.repository");
 
 const config = require("./config");
@@ -162,4 +165,13 @@ app.get("/forgotPassword", authController.forgotPassword);
 
 app.get("/verification", authController.verification);
 
-app.listen(port, () => console.log(`Application has been started at ${port}`));
+app.listen(port, async () => {
+  console.log(`Application has been started at ${port}`);
+
+  console.log("Connecting to mongo db");
+
+  await mongoClient
+    .connect()
+    .catch(console.error)
+    .then(() => console.log("Connected to mongodb server"));
+});

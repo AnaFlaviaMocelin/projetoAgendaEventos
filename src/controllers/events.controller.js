@@ -1,33 +1,15 @@
 const crypto = require("node:crypto");
 
-const events = [
-  {
-    id: crypto.randomUUID(),
-    name: "Show do Metallica",
-    description: "Show do Metallica no Couto Pereira",
-    tags: ["Rock", "Metallica", "Couto Pereira"],
-    where: "Curitiba, Paraná, Couto Pereira",
-    when: "01/06/2023",
-    price: "R$500,00",
-    thumbnail: "https://picsum.photos/id/1/200/300",
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Show do Red Hot Chili Peppers",
-    description: "Show do Red Hot Chili Peppers no Couto Pereira",
-    tags: ["Rock", "Red Hot Chili Peppers", "Couto Pereira"],
-    where: "Curitiba, Paraná, Couto Pereira",
-    when: "01/07/2023",
-    price: "R$350,00",
-    thumbnail: "https://picsum.photos/id/1/200/300",
-  },
-];
+const mongoEventsRepository = require("../repositories/mongo-events.repository");
 
 module.exports = {
   findManyEvents: async function (req, res) {
     if (!req.isAuthenticated()) {
       return res.redirect("/");
     }
+
+    const events = await mongoEventsRepository.findMany();
+
     const pagination = {
       items: events,
       metadata: {
@@ -37,18 +19,21 @@ module.exports = {
         cursor: [...events].pop()?.id,
       },
     };
+
     return res.render("list-events", { pagination });
   },
   newEvent: async function (req, res) {
     if (!req.isAuthenticated()) {
       return res.redirect("/");
     }
+
     return res.render("new-event");
   },
   createEvent: async function (req, res) {
     if (!req.isAuthenticated()) {
       return res.redirect("/");
     }
+
     const data = req.body;
 
     const event = {
@@ -66,7 +51,7 @@ module.exports = {
       price: data?.price ?? "R$0,00",
     };
 
-    events.push(event);
+    await mongoEventsRepository.create(event);
 
     return res.redirect("/events");
   },
