@@ -1,10 +1,8 @@
 const { MongoClient } = require("mongodb");
 
-// Replace the following with your Atlas connection string
-const url =
-  "mongodb+srv://AgendaEventos:agendaeventosapi@cluster0.ukqrzaf.mongodb.net/?retryWrites=true&w=majority";
+const credentials = require("../config/credentials");
 
-const client = new MongoClient(url, {
+const client = new MongoClient(credentials.mongodb.url, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

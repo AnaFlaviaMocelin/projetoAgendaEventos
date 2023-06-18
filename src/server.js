@@ -9,9 +9,6 @@ const passport = require("passport");
 
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
-const GOOGLE_CLIENT_ID =
-  "294086134100-eto116nse6hqonj6p5kan28dju841q19.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "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";
 
 const authController = require("./controllers/auth.controller");
 const eventsController = require("./controllers/events.controller");
@@ -20,7 +17,8 @@ const mongoClient = require("./database/mongo.db");
 
 const mongoUserRepository = require("./repositories/mongo-user.repository");
 
-const config = require("./config");
+const credentials = require("./config/credentials");
+const config = require("./config/get-env");
 const signInUsecase = require("./usecases/sign-in.usecase");
 const passwordService = require("./services/password.service");
 
@@ -62,8 +60,8 @@ passport.use(
 passport.use(
   new GoogleStrategy(
     {
-      clientID: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
+      clientID: credentials.google.clientId,
+      clientSecret: credentials.google.clientSecret,
       callbackURL: "http://localhost:3000/auth/google/callback",
     },
     async function (accessToken, refreshToken, profile, done) {
