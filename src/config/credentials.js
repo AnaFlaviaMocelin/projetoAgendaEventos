@@ -17,4 +17,10 @@ module.exports = {
   session: {
     secret: getEnv("SESSION_SECRET_KEY", false, crypto.randomUUID()),
   },
+  email: {
+    host: getEnv("EMAIL_SMTP_HOST"),
+    port: getEnv("EMAIL_SMTP_PORT"),
+    user: getEnv("EMAIL_SMTP_USER"),
+    password: getEnv("EMAIL_SMTP_PASSWORD"),
+  },
 };

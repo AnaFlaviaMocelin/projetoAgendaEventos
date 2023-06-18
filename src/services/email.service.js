@@ -1,11 +1,13 @@
 const nodemailer = require("nodemailer");
 
+const credentials = require("../config/credentials");
+
 const mailTransporter = nodemailer.createTransport({
-  host: "sandbox.smtp.mailtrap.io",
-  port: 2525,
+  host: credentials.email.host,
+  port: credentials.email.port,
   auth: {
-    user: "0ba1edf6cff783",
-    pass: "ceddf6ed6581ed",
+    user: credentials.email.user,
+    pass: credentials.email.password,
   },
 });
 
