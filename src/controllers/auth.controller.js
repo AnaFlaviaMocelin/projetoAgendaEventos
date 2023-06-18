@@ -74,6 +74,7 @@ module.exports = {
       id: crypto.randomUUID(),
       email: email,
       password: `${hash}:${salt}`,
+      isGoogleUser: false,
     };
 
     await mongoUserRepository.createUser(user);

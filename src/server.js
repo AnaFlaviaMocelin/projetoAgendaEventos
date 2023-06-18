@@ -17,6 +17,8 @@ const mongoClient = require("./database/mongo.db");
 
 const mongoUserRepository = require("./repositories/mongo-user.repository");
 
+const googleAuthService = require("./services/google-auth.service");
+
 const credentials = require("./config/credentials");
 const config = require("./config/get-env");
 const signInUsecase = require("./usecases/sign-in.usecase");
@@ -28,7 +30,11 @@ const port = parseInt(config.getEnv("PORT", false, "3000"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(flash());
 app.use(
-  session({ secret: "mySecret", resave: false, saveUninitialized: false })
+  session({
+    secret: credentials.session.secret,
+    resave: false,
+    saveUninitialized: false,
+  })
 );
 app.use(passport.initialize());
 app.use(passport.session());
@@ -62,15 +68,17 @@ passport.use(
     {
       clientID: credentials.google.clientId,
       clientSecret: credentials.google.clientSecret,
-      callbackURL: "http://localhost:3000/auth/google/callback",
+      callbackURL: credentials.google.redirectUrl,
+      accessType: "offline",
     },
     async function (accessToken, refreshToken, profile, done) {
-      userProfile = profile;
+      const userProfile = profile;
 
-      console.log({
-        accessToken,
-        refreshToken,
-        profile,
+      console.log(accessToken, refreshToken, profile);
+
+      googleAuthService.setCredentials({
+        access_token: accessToken,
+        refresh_token: refreshToken,
       });
 
       return done(null, userProfile);
@@ -84,7 +92,11 @@ passport.serializeUser(async (data, done) => {
   let email = data.hasOwnProperty("email") ? data.email : null;
 
   // google serialize
-  if (data.hasOwnProperty("_json")) {
+
+  const isGoogleUser = data.hasOwnProperty("_json");
+
+  if (isGoogleUser) {
+    console.log("Is google user");
     const googleData = data["_json"];
     email = googleData?.email;
   }
@@ -100,9 +112,21 @@ passport.serializeUser(async (data, done) => {
       id: crypto.randomUUID(),
       email: email,
       password: "empty:empty",
+      isGoogleUser: isGoogleUser,
     };
     console.log("user does not exists, creating it", user);
     await mongoUserRepository.createUser(user);
+  }
+
+  if (user && !user.hasOwnProperty("isGoogleUser") && isGoogleUser) {
+    console.log(
+      "user found, but is not flagged as google user, updating it",
+      user
+    );
+    await mongoUserRepository.updateUser({
+      ...user,
+      isGoogleUser,
+    });
   }
 
   return done(null, user.email);
@@ -110,9 +134,7 @@ passport.serializeUser(async (data, done) => {
 
 passport.deserializeUser(async (email, done) => {
   console.log("deserializeUser", { email });
-
   const user = await mongoUserRepository.findUserByEmail(email);
-
   done(null, user);
 });
 
@@ -129,6 +151,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/events", eventsController.findManyEvents);
 app.get("/events/new", eventsController.newEvent);
 app.post("/events/create", eventsController.createEvent);
+app.delete("/events/:id", eventsController.deleteEvent);
+app.post(
+  "/events/:id/google-calendar",
+  eventsController.createInGoogleCalendar
+);
 
 // Auth (Login + Criar conta)
 // TODO: Separar em outra rota
@@ -144,14 +171,15 @@ app.post(
 
 app.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email", "https://www.googleapis.com/auth/calendar"],
+  })
 );
 
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/error" }),
   async function (req, res) {
-    console.log(req.body, req.headers, "redirect");
     return res.redirect("/events");
   }
 );

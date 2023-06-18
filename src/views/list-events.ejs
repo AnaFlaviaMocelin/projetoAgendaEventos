@@ -6,9 +6,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plataforma de Eventos - Veja os eventos mais proximos de você</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.0.min.js"
+      integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+      crossorigin="anonymous"
+    ></script>
   </head>
   <body>
+    <script>
+      $(document).ready(function () {
+        const eventsIdAsString = $("#events-ids").val();
+        const eventsIds = eventsIdAsString.split(",");
+        for (const eventId of eventsIds) {
+          $(`#delete-event-${eventId}`).click(function () {
+            console.log("Calling /events/:id to delete event", eventId);
+            $.ajax({
+              url: `/events/${eventId}`,
+              type: "DELETE",
+              data: {},
+              success: function () {
+                console.log("Event is deleted, reloading in 1.5s");
+                setTimeout(() => document.location.reload(), 1500);
+              },
+              error: function () {
+                alert("Erro ao deletar o evento");
+              },
+            });
+          });
+
+          $(`#save-on-google-calendar-${eventId}`).click(function () {
+            console.log(
+              "Calling /events/:id/google-calendar to to create event in google calendar",
+              eventId
+            );
+            $.ajax({
+              url: `/events/${eventId}/google-calendar`,
+              type: "POST",
+              data: {},
+              success: function (res) {
+                alert("Evento criado no google calendar");
+                console.log(res);
+              },
+              error: function (res) {
+                alert("Erro ao criar o evento no google");
+                console.log(res);
+              },
+            });
+          });
+        }
+      });
+    </script>
+
     <section>
+      <input type="text" value="<%= eventsIds %>" id="events-ids" hidden />
+
       <div class="max-w-screen-xl px-4 py-8 mx-auto sm:py-12 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
           <div class="grid p-6 bg-gray-100 rounded place-content-center sm:p-8">
@@ -37,8 +88,8 @@
           <div class="lg:col-span-2 lg:py-8">
             <ul class="grid grid-cols-2 gap-4">
               <% for (const event of pagination.items) { %>
-              <li id="event-<%= event.id %>">
-                <a href="/events/<%= event.id %>" class="block group">
+              <li id="event-<%= event._id %>">
+                <a href="/events/<%= event._id %>" class="block group">
                   <img
                     src="<%= event.thumbnail %>"
                     alt=""
@@ -79,6 +130,18 @@
                     </h1>
                   </li>
                 </ul>
+                <button
+                  class="inline-block px-12 py-3 mt-8 text-sm font-medium text-white transition bg-gray-900 border border-gray-900 rounded hover:shadow focus:outline-none focus:ring"
+                  id="delete-event-<%= event._id %>"
+                >
+                  Deletar evento
+                </button>
+                <button
+                  class="inline-block px-12 py-3 mt-8 text-sm font-medium text-white transition bg-gray-900 border border-gray-900 rounded hover:shadow focus:outline-none focus:ring"
+                  id="save-on-google-calendar-<%= event._id %>"
+                >
+                  Salvar na agenda do google
+                </button>
               </li>
               <%}%>
             </ul>
