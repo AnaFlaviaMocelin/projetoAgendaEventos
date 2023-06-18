@@ -162,8 +162,9 @@ app.get("/signup", authController.createAccount);
 app.post("/signup/create", authController.signUp);
 
 app.get("/forgotPassword", authController.forgotPassword);
-
+app.post("/sendEmailToResetPassword", authController.sendEmailToResetPassword);
 app.get("/verification", authController.verification);
+app.post("/resetPassword", authController.resetPassword);
 
 app.listen(port, async () => {
   console.log(`Application has been started at ${port}`);

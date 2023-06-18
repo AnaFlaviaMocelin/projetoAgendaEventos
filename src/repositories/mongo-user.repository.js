@@ -25,6 +25,18 @@ class MongoUserRepository {
     }
   }
 
+  async updateUser({ _id: id, ...data }) {
+    const db = mongoClient.db("Cluster0");
+    const collection = db.collection("users");
+    try {
+      await collection.replaceOne({ _id: id }, data);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
   async findUserById(id) {
     const db = mongoClient.db("Cluster0");
     const collection = db.collection("users");
