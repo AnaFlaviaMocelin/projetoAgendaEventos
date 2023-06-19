@@ -84,11 +84,9 @@
 
         var chatContainer = document.getElementById("chatContainer");
 
-        // Adiciona a mensagem do usuário ao chat
         var userMessageElement = createMessageElement(userMessage, "user-message");
         chatContainer.appendChild(userMessageElement);
 
-        // Para responder à mensagem do usuário
         var botMessage = getBotResponse(userMessage);
         var botMessageElement = createMessageElement(botMessage, "bot-message");
         chatContainer.appendChild(botMessageElement);
