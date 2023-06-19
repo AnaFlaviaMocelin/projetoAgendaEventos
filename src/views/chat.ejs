@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .chat-container {
+        width: 300px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #f9f9f9;
+        margin-bottom: 10px;
+        overflow-y: scroll;
+        max-height: 300px;
+      }
+
+      .chat-message {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+        word-wrap: break-word;
+      }
+
+      .user-message {
+        background-color: #ddf;
+        text-align: right;
+      }
+
+      .bot-message {
+        background-color: #fdd;
+        text-align: left;
+      }
+
+      input[type="text"] {
+        width: 240px;
+        padding: 5px;
+      }
+
+      button {
+        padding: 5px 10px;
+      }
+    </style>
+</head>
+<body>
+  <div
+    class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0"
+  >
+   
+      <center class="flex items-center mb-6 text-10x font-semibold"><img
+        class="w-8 h-8 mr-2" 
+        src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg"
+        alt="logo"
+      /></center>
+      <center class="text-black text-2xl font-bold">Chat de Dúvidas</center>
+    
+    <br>
+    <div class="container">
+      <div class="chat-container" id="chatContainer">
+        <div class="chat-message bot-message">
+          <p>Olá! Como posso ajudar?</p>
+        </div>
+      </div>
+
+      <div>
+        <input class="border-2" type="text" id="userInput" placeholder="Digite sua mensagem">
+        <button class="h-10 rounded bg-indigo-600 px-8 py-2 text-sm font-medium text-white transition hover:scale-110 hover:shadow-xl focus:outline-none focus:ring active:bg-indigo-500" onclick="sendMessage()">Enviar</button>
+      </div>
+    </div>
+
+    <script>
+      function sendMessage() {
+        var userInput = document.getElementById("userInput");
+        var userMessage = userInput.value;
+
+        var chatContainer = document.getElementById("chatContainer");
+
+        // Adiciona a mensagem do usuário ao chat
+        var userMessageElement = createMessageElement(userMessage, "user-message");
+        chatContainer.appendChild(userMessageElement);
+
+        // Lógica para responder à mensagem do usuário
+        var botMessage = getBotResponse(userMessage);
+        var botMessageElement = createMessageElement(botMessage, "bot-message");
+        chatContainer.appendChild(botMessageElement);
+
+        // Role até o final do chat
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Limpa o campo de entrada do usuário
+        userInput.value = "";
+      }
+
+      function createMessageElement(message, className) {
+        var messageElement = document.createElement("div");
+        messageElement.className = "chat-message " + className;
+        messageElement.innerHTML = "<p>" + message + "</p>";
+        return messageElement;
+      }
+
+      function getBotResponse(message) {
+        // Lógica para processar a mensagem do usuário e gerar uma resposta do bot
+        // Você pode adicionar sua própria lógica aqui para fornecer respostas adequadas às perguntas dos usuários
+
+        // Exemplo de resposta fixa do bot
+        if (message.includes("olá")) {
+          return "Olá! Como posso ajudar você?";
+        } else if (message.includes("como está")) {
+          return "Estou bem, obrigado! E você?";
+        } else if (message.includes("qual é o seu nome")) {
+          return "Meu nome é ChatBot. Como posso ser útil?";
+        } else if (message.includes("qual é a sua função")) {
+          return "Minha função é fornecer respostas a perguntas e ajudar com dúvidas. O que você gostaria de saber?";
+        } else if (message.includes("como faço para criar uma conta")) {
+          return "Para criar uma conta, visite nossa página de registro e preencha o formulário com suas informações pessoais.";
+        } else {
+          return "Desculpe, não entendi. Poderia repetir?";
+        }
+      }
+    </script>
+  </body>
+</html>

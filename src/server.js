@@ -23,6 +23,7 @@ const credentials = require("./config/credentials");
 const config = require("./config/get-env");
 const signInUsecase = require("./usecases/sign-in.usecase");
 const passwordService = require("./services/password.service");
+const { render } = require("ejs");
 
 const app = express();
 const port = parseInt(config.getEnv("PORT", false, "3000"));
@@ -191,6 +192,9 @@ app.get("/forgotPassword", authController.forgotPassword);
 app.post("/sendEmailToResetPassword", authController.sendEmailToResetPassword);
 app.get("/verification", authController.verification);
 app.post("/resetPassword", authController.resetPassword);
+app.get("/chat", (req, res) => {
+  return res.render("chat")
+});
 
 app.listen(port, async () => {
   console.log(`Application has been started at ${port}`);
